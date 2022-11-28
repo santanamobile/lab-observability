@@ -24,8 +24,7 @@ Este script contempla:
 ## Observação
 Estes labs foram realizados com as seguintes versões de OS e ferramentas:
 
-Linux Mint 21 "Vanessa"
-Virtual Box 6.1.38
-Vagrant 2.3.3
-Terraform v1.3.5
-
+- Linux Mint 21 "Vanessa"
+- Virtual Box 6.1.38
+- Vagrant 2.3.3
+- Terraform v1.3.5
