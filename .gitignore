@@ -1,0 +1,14 @@
+node_modules
+.tmp
+npm-debug.log
+*.terraform
+*.pem
+*.tfvars
+*.tfplan
+*.tfstate
+*.tfstate.backup
+*.lock.info
+.terraform
+.DS_Store
+.vagrant
+.terraform.lock.hcl
