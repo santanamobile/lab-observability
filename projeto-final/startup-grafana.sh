@@ -1,8 +1,4 @@
 #!/bin/sh
-#
-# Reference:
-# https://www.radishlogic.com/aws/ec2/how-to-install-grafana-on-ec2-amazon-linux-2/
-#
 
 sudo cat >  /etc/yum.repos.d/grafana.repo << EOF
 [grafana]

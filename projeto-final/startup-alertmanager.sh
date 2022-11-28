@@ -1,5 +1,5 @@
 #!/bin/sh
-# https://devconnected.com/alertmanager-and-prometheus-complete-setup-on-linux/
+
 WEBHOOK_URL=XXXX  # Webhook URL
 
 sudo useradd --no-create-home alertmanager
