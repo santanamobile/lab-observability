@@ -1,7 +1,4 @@
 #!/bin/sh
-
-WEBHOOK_URL=XXXX  # Webhook URL
-
 sudo useradd --no-create-home alertmanager
 sudo mkdir -p /etc/alertmanager
 sudo mkdir -p /var/lib/alertmanager
@@ -16,22 +13,18 @@ sudo cp alertmanager-0.24.0.linux-amd64/alertmanager.yml /etc/alertmanager
 rm -rf alertmanager*
 
 sudo cat > /etc/alertmanager/alertmanager.yml << EOF
+global:
+  resolve_timeout: 1m
+  slack_api_url: '${var.webhook_slack}'
+
 route:
-  group_by: ['alertname']
-  group_wait: 30s
-  group_interval: 5m
-  repeat_interval: 1h
-  receiver: 'web.hook'
+  receiver: 'slack-notifications'
+
 receivers:
-  - name: 'web.hook'
-    webhook_configs:
-      - url: 'http://127.0.0.1:5001/'
-inhibit_rules:
-  - source_match:
-      severity: 'critical'
-    target_match:
-      severity: 'warning'
-    equal: ['alertname', 'dev', 'instance']
+- name: 'slack-notifications'
+  slack_configs:
+  - channel: '#projeto-observabilidade'
+    send_resolved: true
 EOF
 
 sudo cat > /etc/systemd/system/alertmanager.service << EOF
@@ -61,6 +54,7 @@ sudo chown -R alertmanager:alertmanager /var/lib/alertmanager
 sudo chown alertmanager:alertmanager /usr/local/bin/amtool /usr/local/bin/alertmanager
 
 sudo systemctl daemon-reload
+sleep 2
 sudo systemctl enable alertmanager
 sudo systemctl start alertmanager
 

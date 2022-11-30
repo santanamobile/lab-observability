@@ -9,6 +9,8 @@ variable "ssh_key_name" {}
 
 variable "private_key_path" {}
 
+variable "webhook_slack" {}
+
 variable "region" {
   default = "us-east-1"
 }
@@ -340,7 +342,69 @@ resource "aws_instance" "alertmanager-projeto" {
 #  subnet_id              = aws_subnet.subnet1.id
 #  vpc_security_group_ids = [aws_security_group.sg-alertmanager-instance.id]
   key_name               = var.ssh_key_name
-  user_data              = file("${path.module}/startup-alertmanager.sh")
+  #user_data              = file("${path.module}/startup-alertmanager.sh")
+  user_data = <<EOF
+#!/bin/sh
+
+sudo useradd --no-create-home alertmanager
+sudo mkdir -p /etc/alertmanager
+sudo mkdir -p /var/lib/alertmanager
+
+wget https://github.com/prometheus/alertmanager/releases/download/v0.24.0/alertmanager-0.24.0.linux-amd64.tar.gz
+tar xvfz alertmanager-0.24.0.linux-amd64.tar.gz
+
+sudo cp alertmanager-0.24.0.linux-amd64/alertmanager /usr/local/bin
+sudo cp alertmanager-0.24.0.linux-amd64/amtool /usr/local/bin/
+sudo cp alertmanager-0.24.0.linux-amd64/alertmanager.yml /etc/alertmanager
+
+rm -rf alertmanager*
+
+echo -e "
+global:
+  resolve_timeout: 1m
+  slack_api_url: '${var.webhook_slack}'
+
+route:
+  receiver: 'slack-notifications'
+
+receivers:
+- name: 'slack-notifications'
+  slack_configs:
+  - channel: '#projeto-observabilidade'
+    send_resolved: true
+" >  /etc/alertmanager/alertmanager.yml
+
+echo -e "
+[Unit]
+Description=Alert Manager
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=alertmanager
+Group=alertmanager
+ExecStart=/usr/local/bin/alertmanager \
+  --config.file=/etc/alertmanager/alertmanager.yml \
+  --storage.path=/var/lib/alertmanager
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+"> /etc/systemd/system/alertmanager.service
+
+sleep 2
+
+sudo chown -R alertmanager:alertmanager /etc/alertmanager
+sudo chown -R alertmanager:alertmanager /var/lib/alertmanager
+sudo chown alertmanager:alertmanager /usr/local/bin/amtool /usr/local/bin/alertmanager
+
+sudo systemctl daemon-reload
+sleep 2
+sudo systemctl enable alertmanager
+sudo systemctl start alertmanager
+EOF
 
   tags = {
     Name = "alertmanager-projeto"
@@ -359,7 +423,34 @@ resource "aws_instance" "alertmanager-projeto" {
     private_key = file(var.private_key_path)
   }
 }
+/*
+resource "aws_instance" "graylog-projeto" {
+  ami                    = data.aws_ami.aws-linux.id
+  instance_type          = "t2.small"
+#  subnet_id              = aws_subnet.subnet1.id
+#  vpc_security_group_ids = [aws_security_group.sg-alertmanager-instance.id]
+  key_name               = var.ssh_key_name
+  user_data              = file("${path.module}/startup-alertmanager.sh")
 
+  tags = {
+    Name = "graylog-projeto"
+    "Terraform" = "Yes"
+  }
+
+  network_interface {
+    network_interface_id = aws_network_interface.graylog-privnet.id
+    device_index         = 0
+  }
+
+  connection {
+    type        = "ssh"
+    host        = self.public_ip
+    user        = "ec2-user"
+    private_key = file(var.private_key_path)
+  }
+}
+
+*/
 # //////////////////////////////
 # DATA
 # //////////////////////////////
