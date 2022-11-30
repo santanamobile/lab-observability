@@ -18,8 +18,12 @@ rm -rf prometheus-2.40.2.linux-amd64.tar.gz prometheus-2.40.2.linux-amd64
 sudo cat > /etc/prometheus/prometheus.yml << EOF
 global:
   scrape_interval: 15s
+  evaluation_interval: 15s
   external_labels:
     monitor: 'prometheus'
+
+rule_files:
+  - rules.yml
 
 scrape_configs:
   - job_name: 'prometheus'
@@ -34,6 +38,20 @@ alerting:
   alertmanagers:
     - static_configs:
       - targets: ['172.16.0.11:9093']
+EOF
+
+sudo cat > /etc/prometheus/rules.yml << EOF
+groups:
+- name: AllInstances
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 1m
+    annotations:
+      title: 'Instance {{ $labels.instance }} down'
+      description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.'
+    labels:
+      severity: 'critical'
 EOF
 
 sudo cat > /etc/systemd/system/prometheus.service << EOF
@@ -66,6 +84,6 @@ sudo chown -R prometheus:prometheus /etc/prometheus/console_libraries
 sudo chown -R prometheus:prometheus /var/lib/prometheus
 
 sudo systemctl daemon-reload
+sleep 2
 sudo systemctl enable prometheus
 sudo systemctl start prometheus
-
