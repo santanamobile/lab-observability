@@ -7,6 +7,9 @@ tar xzf node_exporter-1.4.0.linux-amd64.tar.gz
 sudo cp node_exporter-1.4.0.linux-amd64/node_exporter /usr/local/bin/node_exporter
 rm -rf node_exporter-1.4.0.linux-amd64.tar.gz node_exporter-1.4.0.linux-amd64
 
+amazon-linux-extras install epel -y
+yum -y install stress
+
 sudo cat > /etc/systemd/system/node-exporter.service << EOF
 [Unit]
 Description=Prometheus Node Exporter Service
