@@ -42,18 +42,53 @@ EOF
 
 sudo cat > /etc/prometheus/rules.yml << EOF
 groups:
-- name: AllInstances
+- name: targets
   rules:
-  - alert: InstanceDown
+  - alert: HostServiceDown
     expr: up == 0
     for: 1m
     annotations:
-      title: 'Instance {{ $labels.instance }} down'
-      description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.'
+      # title: 'Instance {{ $labels.instance }} down'
+      # description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.'
+      summary: "Monitor service non-operational"
+      description: "Service {{ $labels.instance }} is down."
     labels:
-      severity: 'critical'
-EOF
+      severity: critical
+      app_type: service
 
+  - alert: HostOutOfMemory
+    # expr: node_memory_MemAvailable / node_memory_MemTotal * 100 < 25
+    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 25
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Host out of memory (instance {{ $labels.instance }})"
+      description: "Node memory is filling up (< 25% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+  - alert: HostOutOfDiskSpace
+    # expr: (node_filesystem_avail{mountpoint="/"}  * 100) / node_filesystem_size{mountpoint="/"} < 50
+    expr: (node_filesystem_avail_bytes{mountpoint="/"} * 100) / node_filesystem_size_bytes{mountpoint="/"} < 50
+    for: 1s
+    labels:
+      severity: warning
+    annotations:
+      summary: "Host out of disk space (instance {{ $labels.instance }})"
+      description: "Disk is almost full (< 50% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+  - alert: HostHighCpuLoad
+    expr: (sum by (instance) (irate(node_cpu{job="node_exporter_metrics",mode="idle"}[5m]))) > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Host high CPU load (instance {{ $labels.instance }})"
+      description: "CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+EOF
+#
+# Check prometheus rules
+# promtool check rules rules.yml
+#
 sudo cat > /etc/systemd/system/prometheus.service << EOF
 [Unit]
 Description=Prometheus
