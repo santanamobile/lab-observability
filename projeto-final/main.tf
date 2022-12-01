@@ -365,7 +365,10 @@ global:
   slack_api_url: '${var.webhook_slack}'
 
 route:
-  receiver: 'slack-notifications'
+  receiver: slack-notifications
+  group_wait: 30s
+  group_interval: 30s
+  repeat_interval: 1m
 
 receivers:
 - name: 'slack-notifications'
