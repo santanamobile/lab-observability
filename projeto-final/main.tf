@@ -60,8 +60,8 @@ resource "aws_subnet" "subnet1" {
 
 # IPs Privados
 resource "aws_network_interface" "prometheus-privnet" {
-  subnet_id   = aws_subnet.subnet1.id
-  private_ips = ["172.16.0.10"]
+  subnet_id       = aws_subnet.subnet1.id
+  private_ips     = ["172.16.0.10"]
   security_groups = [aws_security_group.sg-prometheus-instance.id]
 
   tags = {
@@ -70,8 +70,8 @@ resource "aws_network_interface" "prometheus-privnet" {
 }
 
 resource "aws_network_interface" "alertmanager-privnet" {
-  subnet_id   = aws_subnet.subnet1.id
-  private_ips = ["172.16.0.11"]
+  subnet_id       = aws_subnet.subnet1.id
+  private_ips     = ["172.16.0.11"]
   security_groups = [aws_security_group.sg-alertmanager-instance.id]
 
   tags = {
@@ -80,8 +80,8 @@ resource "aws_network_interface" "alertmanager-privnet" {
 }
 
 resource "aws_network_interface" "exporter-privnet" {
-  subnet_id   = aws_subnet.subnet1.id
-  private_ips = ["172.16.0.12"]
+  subnet_id       = aws_subnet.subnet1.id
+  private_ips     = ["172.16.0.12"]
   security_groups = [aws_security_group.sg-exporter-instance.id]
 
   tags = {
@@ -90,8 +90,8 @@ resource "aws_network_interface" "exporter-privnet" {
 }
 
 resource "aws_network_interface" "grafana-privnet" {
-  subnet_id   = aws_subnet.subnet1.id
-  private_ips = ["172.16.0.13"]
+  subnet_id       = aws_subnet.subnet1.id
+  private_ips     = ["172.16.0.13"]
   security_groups = [aws_security_group.sg-grafana-instance.id]
 
   tags = {
@@ -259,15 +259,15 @@ resource "aws_security_group" "sg-alertmanager-instance" {
 
 # INSTANCE
 resource "aws_instance" "prometheus-projeto" {
-  ami                    = data.aws_ami.aws-linux.id
-  instance_type          = "t2.micro"
-#  subnet_id              = aws_subnet.subnet1.id
-#  vpc_security_group_ids = [aws_security_group.sg-prometheus-instance.id]
-  key_name               = var.ssh_key_name
-  user_data              = file("${path.module}/startup-prometheus.sh")
+  ami           = data.aws_ami.aws-linux.id
+  instance_type = "t2.micro"
+  #  subnet_id              = aws_subnet.subnet1.id
+  #  vpc_security_group_ids = [aws_security_group.sg-prometheus-instance.id]
+  key_name  = var.ssh_key_name
+  user_data = file("${path.module}/startup-prometheus.sh")
 
   tags = {
-    Name = "prometheus-projeto"
+    Name        = "prometheus-projeto"
     "Terraform" = "Yes"
   }
 
@@ -285,15 +285,15 @@ resource "aws_instance" "prometheus-projeto" {
 }
 
 resource "aws_instance" "grafana-projeto" {
-  ami                    = data.aws_ami.aws-linux.id
-  instance_type          = "t2.micro"
-#  subnet_id              = aws_subnet.subnet1.id
-#  vpc_security_group_ids = [aws_security_group.sg-grafana-instance.id]
-  key_name               = var.ssh_key_name
-  user_data              = file("${path.module}/startup-grafana.sh")
+  ami           = data.aws_ami.aws-linux.id
+  instance_type = "t2.micro"
+  #  subnet_id              = aws_subnet.subnet1.id
+  #  vpc_security_group_ids = [aws_security_group.sg-grafana-instance.id]
+  key_name  = var.ssh_key_name
+  user_data = file("${path.module}/startup-grafana.sh")
 
   tags = {
-    Name = "grafana-projeto"
+    Name        = "grafana-projeto"
     "Terraform" = "Yes"
   }
 
@@ -311,15 +311,15 @@ resource "aws_instance" "grafana-projeto" {
 }
 
 resource "aws_instance" "exporter-projeto" {
-  ami                    = data.aws_ami.aws-linux.id
-  instance_type          = "t2.micro"
-#  subnet_id              = aws_subnet.subnet1.id
-#  vpc_security_group_ids = [aws_security_group.sg-exporter-instance.id]
-  key_name               = var.ssh_key_name
-  user_data              = file("${path.module}/startup-exporter.sh")
+  ami           = data.aws_ami.aws-linux.id
+  instance_type = "t2.micro"
+  #  subnet_id              = aws_subnet.subnet1.id
+  #  vpc_security_group_ids = [aws_security_group.sg-exporter-instance.id]
+  key_name  = var.ssh_key_name
+  user_data = file("${path.module}/startup-exporter.sh")
 
   tags = {
-    Name = "exporter-projeto"
+    Name        = "exporter-projeto"
     "Terraform" = "Yes"
   }
 
@@ -337,11 +337,11 @@ resource "aws_instance" "exporter-projeto" {
 }
 
 resource "aws_instance" "alertmanager-projeto" {
-  ami                    = data.aws_ami.aws-linux.id
-  instance_type          = "t2.micro"
-#  subnet_id              = aws_subnet.subnet1.id
-#  vpc_security_group_ids = [aws_security_group.sg-alertmanager-instance.id]
-  key_name               = var.ssh_key_name
+  ami           = data.aws_ami.aws-linux.id
+  instance_type = "t2.micro"
+  #  subnet_id              = aws_subnet.subnet1.id
+  #  vpc_security_group_ids = [aws_security_group.sg-alertmanager-instance.id]
+  key_name = var.ssh_key_name
   #user_data              = file("${path.module}/startup-alertmanager.sh")
   user_data = <<EOF
 #!/bin/sh
@@ -410,7 +410,7 @@ sudo systemctl start alertmanager
 EOF
 
   tags = {
-    Name = "alertmanager-projeto"
+    Name        = "alertmanager-projeto"
     "Terraform" = "Yes"
   }
 
